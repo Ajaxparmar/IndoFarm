@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import "./globals.css";
+import "@/src/app/globals.css";
 import Navbar from "@/src/components/Navbar";
 import { CartProvider } from "@/src/context/CartContext";
 import { AuthProvider } from "@/src/context/AuthContext";

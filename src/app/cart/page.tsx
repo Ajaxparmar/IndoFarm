@@ -36,12 +36,26 @@ export default function Cart() {
         customerEmail: user.email
       });
 
-      // 2. Clear Cart
-      clearCart();
+      // 2. Create Clover Checkout Session
+      const response = await fetch('/api/clover-checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          amount: total, 
+          items: cart,
+          orderId: orderRef.id
+        })
+      });
 
-      // 3. Redirect to a success or order detail page
-      alert(`Order # ${orderRef.id} placed successfully!`);
-      router.push('/');
+      const data = await response.json();
+      
+      if (data.checkoutUrl) {
+        // Clear cart before redirecting (or wait for success page)
+        clearCart();
+        window.location.href = data.checkoutUrl;
+      } else {
+        throw new Error(data.error || 'Failed to get checkout URL');
+      }
     } catch (e) {
       console.error(e);
       alert("Checkout failed. Please try again.");

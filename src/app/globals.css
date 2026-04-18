@@ -1,5 +1,4 @@
 @import "tailwindcss";
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap');
 
 @theme {
   --font-serif: "Georgia", serif;
@@ -9,21 +8,19 @@
   --color-brand-ink: #1b3022;
   --color-brand-accent: #d48c70;
   --color-brand-muted: #8c968e;
-  --color-brand-glass: rgba(255, 255, 255, 0.8);
+}
+
+:root {
+  --font-sans: "Helvetica Neue", "Arial", sans-serif;
+  --font-serif: "Georgia", serif;
 }
 
 body {
   font-family: var(--font-sans);
-  background-color: var(--color-brand-bg);
-  color: var(--color-brand-ink);
+  background-color: #fdfbf7;
+  color: #1b3022;
 }
 
 .serif {
   font-family: var(--font-serif);
-}
-
-@layer base {
-  h1, h2, h3, h4, h5, h6 {
-    @apply font-serif;
-  }
 }
