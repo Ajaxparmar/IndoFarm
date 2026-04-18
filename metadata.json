@@ -1,0 +1,6 @@
+{
+  "name": "Indo-Farm E-Commerce",
+  "description": "Premium marketplace for organic dry fruits and lucky stones with secure payments, order tracking, and AI-powered recommendations.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["auth", "database", "ai_recommendations", "payments"]
+}
