@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import Navbar from "@/src/components/Navbar";
 import { CartProvider } from "@/src/context/CartContext";
+import { AuthProvider } from "@/src/context/AuthContext";
 
 export const metadata: Metadata = {
   title: "Indo-Farm | Organic Harvest & Mystic Energy",
@@ -16,12 +17,13 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="antialiased min-h-screen bg-brand-bg text-brand-ink selection:bg-brand-accent/30">
-        <CartProvider>
-          <div className="flex flex-col min-h-screen">
-            <Navbar />
-            <main className="flex-grow pt-20">
-              {children}
-            </main>
+        <AuthProvider>
+          <CartProvider>
+            <div className="flex flex-col min-h-screen">
+              <Navbar />
+              <main className="flex-grow pt-20">
+                {children}
+              </main>
             <footer className="h-[200px] flex flex-col justify-center px-10 border-t border-brand-ink/5 text-brand-muted">
               <div className="max-w-[1440px] mx-auto w-full flex flex-col md:flex-row justify-between items-center gap-8">
                 <div className="text-[11px] uppercase tracking-widest font-medium">
@@ -40,7 +42,8 @@ export default function RootLayout({
               </div>
             </footer>
           </div>
-        </CartProvider>
+          </CartProvider>
+        </AuthProvider>
       </body>
     </html>
   );

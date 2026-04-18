@@ -1,0 +1,121 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 0. Default Deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // --- Global Helpers ---
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    
+    function isVerified() {
+      return isSignedIn() && request.auth.token.email_verified == true;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    // --- Entity Validations ---
+
+    function isValidProduct(p) {
+      return p.name is string && p.name.size() > 0 && p.name.size() <= 200 &&
+             p.description is string && p.description.size() <= 2000 &&
+             p.price is number && p.price >= 0 &&
+             p.category in ['dry-fruits', 'lucky-stones'] &&
+             p.image is string && p.image.size() <= 1000 &&
+             (p.get('rating', 0) is number) &&
+             (p.get('reviewsCount', 0) is int) &&
+             (p.get('stock', 0) is int) && p.get('stock', 0) >= 0;
+    }
+
+    function isValidOrder(o) {
+      return o.userId == request.auth.uid &&
+             o.items is list && o.items.size() > 0 && o.items.size() <= 50 &&
+             o.total is number && o.total >= 0 &&
+             o.status in ['pending', 'processing', 'shipped', 'delivered'] &&
+             (o.get('createdAt', request.time) == request.time || o.createdAt == existing().createdAt);
+    }
+
+    function isValidUser(u) {
+      return u.email == request.auth.token.email &&
+             u.role in ['user', 'admin'] &&
+             u.get('displayName', '') is string && u.get('displayName', '').size() <= 100;
+    }
+
+    function isValidReview(r, productId) {
+      return r.productId == productId &&
+             r.userId == request.auth.uid &&
+             r.rating is int && r.rating >= 1 && r.rating <= 5 &&
+             r.comment is string && r.comment.size() <= 1000;
+    }
+
+    // --- Match Blocks ---
+
+    // Products collection
+    match /products/{productId} {
+      allow read: if true; // Public read
+      allow create: if isAdmin() && isValidProduct(incoming()) && isValidId(productId);
+      allow update: if (isAdmin() && isValidProduct(incoming())) ||
+                    // Allow system updates like rating/stock (if we had a trigger, but here client-side for demo)
+                    (isSignedIn() && incoming().diff(existing()).affectedKeys().hasOnly(['rating', 'reviewsCount', 'stock']));
+      allow delete: if isAdmin();
+
+      // Nested Reviews
+      match /reviews/{reviewId} {
+        allow read: if true;
+        allow create: if isVerified() && isValidReview(incoming(), productId) && isValidId(reviewId) &&
+                        exists(/databases/$(database)/documents/products/$(productId));
+        allow update: if isOwner(existing().userId) && isValidReview(incoming(), productId) &&
+                        incoming().diff(existing()).affectedKeys().hasOnly(['rating', 'comment']);
+        allow delete: if isOwner(existing().userId) || isAdmin();
+      }
+    }
+
+    // Orders collection
+    match /orders/{orderId} {
+      allow get: if isOwner(existing().userId) || isAdmin();
+      allow list: if isSignedIn() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow create: if isVerified() && isValidOrder(incoming()) && isValidId(orderId);
+      allow update: if (isOwner(existing().userId) && existing().status == 'pending' && 
+                        incoming().diff(existing()).affectedKeys().hasOnly(['shippingAddress'])) ||
+                    (isAdmin() && incoming().diff(existing()).affectedKeys().hasOnly(['status', 'updatedAt']));
+      allow delete: if isAdmin();
+    }
+
+    // Users collection
+    match /users/{userId} {
+      allow get: if isOwner(userId) || isAdmin();
+      allow create: if isOwner(userId) && isValidUser(incoming()) && incoming().role == 'user';
+      allow update: if isOwner(userId) && isValidUser(incoming()) && 
+                    incoming().role == existing().role && // Prevent self-elevation
+                    incoming().diff(existing()).affectedKeys().hasOnly(['displayName', 'email']);
+      allow delete: if isAdmin();
+    }
+
+    // Admin Access collection (only managed via console or backend)
+    match /admins/{adminId} {
+      allow read: if isSignedIn();
+      allow write: if false;
+    }
+  }
+}

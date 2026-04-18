@@ -4,7 +4,6 @@ import React, { useState } from 'react';
 import * as motion from 'motion/react-client';
 import { AnimatePresence } from 'motion/react';
 import { Search, Sparkles, X, ArrowRight } from 'lucide-react';
-import { getRecommendations } from '@/src/services/geminiService';
 import ProductCard from './ProductCard';
 
 export default function RecommendationBox() {

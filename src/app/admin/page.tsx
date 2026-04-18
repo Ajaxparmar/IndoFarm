@@ -1,16 +1,82 @@
 "use client";
 
+import React, { useEffect, useState } from 'react';
 import * as motion from 'motion/react-client';
-import { Package, ShoppingBag, Users, DollarSign, Plus, Edit2, Trash2, ArrowUpRight } from 'lucide-react';
+import { Package, ShoppingBag, Users, DollarSign, Plus, Edit2, Trash2, ArrowUpRight, Database } from 'lucide-react';
 import { PRODUCTS } from '@/src/constants';
 import { formatCurrency } from '@/src/lib/utils';
+import { useAuth } from '@/src/context/AuthContext';
+import { collection, onSnapshot, query, addDoc, serverTimestamp, setDoc, doc } from 'firebase/firestore';
+import { db } from '@/src/lib/firebase';
+import { Product } from '@/src/types';
 
 export default function Admin() {
+  const { user, isAdmin, loginWithGoogle } = useAuth();
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!isAdmin) return;
+
+    const q = query(collection(db, 'products'));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const prods = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Product[];
+      setProducts(prods);
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, [isAdmin]);
+
+  const seedDatabase = async () => {
+    if (!isAdmin) return;
+    try {
+      for (const p of PRODUCTS) {
+        // Use the same IDs for consistency
+        await setDoc(doc(db, 'products', p.id), {
+          ...p,
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp()
+        });
+      }
+      alert("Database seeded successfully!");
+    } catch (e) {
+      console.error(e);
+      alert("Error seeding database");
+    }
+  };
+
+  if (!user) {
+    return (
+      <div className="pt-32 pb-24 min-h-screen flex flex-col items-center justify-center bg-brand-bg">
+        <h1 className="text-3xl serif mb-8">Admin Access Required</h1>
+        <button 
+          onClick={loginWithGoogle}
+          className="bg-brand-ink text-brand-bg px-8 py-4 rounded-2xl font-bold uppercase tracking-widest text-xs hover:bg-brand-accent transition-all cursor-pointer"
+        >
+          Login with Google
+        </button>
+      </div>
+    );
+  }
+
+  if (!isAdmin) {
+    return (
+      <div className="pt-32 pb-24 min-h-screen flex flex-col items-center justify-center bg-brand-bg">
+        <h1 className="text-3xl serif mb-4 text-center">Unauthorized</h1>
+        <p className="text-brand-muted mb-8">You do not have administrative privileges.</p>
+        <p className="text-[10px] text-brand-muted/50 uppercase tracking-widest bg-white p-4 rounded-xl border border-brand-ink/5">
+          Your UID is: {user.uid}
+        </p>
+      </div>
+    );
+  }
+
   const stats = [
     { label: 'Total Revenue', value: '$12,450', icon: DollarSign, color: 'text-green-600', bg: 'bg-green-100' },
     { label: 'Total Orders', value: '156', icon: ShoppingBag, color: 'text-blue-600', bg: 'bg-blue-100' },
     { label: 'Active Users', value: '842', icon: Users, color: 'text-purple-600', bg: 'bg-purple-100' },
-    { label: 'Products', value: PRODUCTS.length.toString(), icon: Package, color: 'text-brand-accent', bg: 'bg-brand-bg' },
+    { label: 'Products', value: products.length.toString(), icon: Package, color: 'text-brand-accent', bg: 'bg-brand-bg' },
   ];
 
   return (
@@ -21,10 +87,19 @@ export default function Admin() {
             <h1 className="text-5xl font-medium serif mb-2">Admin Dashboard</h1>
             <p className="text-brand-muted text-sm font-medium uppercase tracking-[0.2em]">Manage your organic empire</p>
           </div>
-          <button className="bg-brand-ink text-brand-bg px-8 py-4 rounded-2xl font-bold uppercase tracking-widest text-xs flex items-center space-x-3 hover:bg-brand-accent transition-all shadow-xl cursor-pointer">
-            <Plus size={18} />
-            <span>Add New Product</span>
-          </button>
+          <div className="flex space-x-4">
+            <button 
+              onClick={seedDatabase}
+              className="bg-brand-bg text-brand-ink border border-brand-ink/10 px-8 py-4 rounded-2xl font-bold uppercase tracking-widest text-xs flex items-center space-x-3 hover:bg-brand-bg/80 transition-all cursor-pointer"
+            >
+              <Database size={18} />
+              <span>Seed DB</span>
+            </button>
+            <button className="bg-brand-ink text-brand-bg px-8 py-4 rounded-2xl font-bold uppercase tracking-widest text-xs flex items-center space-x-3 hover:bg-brand-accent transition-all shadow-xl cursor-pointer">
+              <Plus size={18} />
+              <span>Add New Product</span>
+            </button>
+          </div>
         </div>
 
         {/* Stats Grid */}
@@ -51,7 +126,7 @@ export default function Admin() {
           <div className="p-10 border-b border-brand-ink/5 flex justify-between items-center">
             <h3 className="text-2xl serif italic">Product Inventory</h3>
             <div className="text-[10px] uppercase font-bold tracking-widest text-brand-accent bg-brand-bg px-4 py-2 rounded-full">
-              Showing {PRODUCTS.length} Items
+              Showing {products.length} Items
             </div>
           </div>
           
@@ -67,7 +142,7 @@ export default function Admin() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-brand-ink/5">
-                {PRODUCTS.map((product) => (
+                {products.map((product) => (
                   <tr key={product.id} className="hover:bg-brand-bg/10 transition-colors">
                     <td className="px-10 py-6">
                       <div className="flex items-center space-x-4">

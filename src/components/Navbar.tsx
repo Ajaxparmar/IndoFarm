@@ -8,11 +8,13 @@ import * as motion from 'motion/react-client';
 import { AnimatePresence } from 'motion/react';
 import { cn } from '@/src/lib/utils';
 import { useCart } from '@/src/context/CartContext';
+import { useAuth } from '@/src/context/AuthContext';
 
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { itemCount } = useCart();
+  const { user, loginWithGoogle, logout } = useAuth();
   const pathname = usePathname();
 
   useEffect(() => {
@@ -64,9 +66,31 @@ export default function Navbar() {
             <span>Cart ({itemCount})</span>
           </Link>
           
-          <Link href="/login" className="text-brand-ink hover:text-brand-accent transition-colors">
-            <User size={18} />
-          </Link>
+          {user ? (
+            <div className="flex items-center space-x-4">
+              <button 
+                onClick={logout}
+                className="text-[10px] uppercase font-bold tracking-widest text-brand-muted hover:text-brand-accent transition-colors cursor-pointer"
+              >
+                Sign Out
+              </button>
+              <Link href="/admin" className="text-brand-ink hover:text-brand-accent transition-colors">
+                {user.photoURL ? (
+                  <img src={user.photoURL} className="w-6 h-6 rounded-full border border-brand-ink/10" alt="User" />
+                ) : (
+                  <User size={18} />
+                )}
+              </Link>
+            </div>
+          ) : (
+            <button 
+              onClick={loginWithGoogle}
+              className="text-brand-ink hover:text-brand-accent transition-colors flex items-center space-x-2"
+            >
+              <User size={18} />
+              <span className="text-[10px] uppercase font-bold tracking-widest">Sign In</span>
+            </button>
+          )}
           
           <button 
             className="md:hidden text-brand-ink cursor-pointer"

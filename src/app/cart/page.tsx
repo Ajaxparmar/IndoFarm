@@ -1,13 +1,54 @@
 "use client";
 
+import React, { useState } from 'react';
 import * as motion from 'motion/react-client';
 import { ShoppingCart, Trash2, Plus, Minus, ArrowRight, ShoppingBag } from 'lucide-react';
 import { useCart } from '@/src/context/CartContext';
+import { useAuth } from '@/src/context/AuthContext';
 import { formatCurrency } from '@/src/lib/utils';
 import Link from 'next/link';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { db } from '@/src/lib/firebase';
+import { useRouter } from 'next/navigation';
 
 export default function Cart() {
-  const { cart, updateQuantity, removeFromCart, total } = useCart();
+  const { cart, updateQuantity, removeFromCart, total, clearCart } = useCart();
+  const { user, loginWithGoogle } = useAuth();
+  const [isCheckingOut, setIsCheckingOut] = useState(false);
+  const router = useRouter();
+
+  const handleCheckout = async () => {
+    if (!user) {
+      loginWithGoogle();
+      return;
+    }
+
+    setIsCheckingOut(true);
+    try {
+      // 1. Create Order in Firestore
+      const orderRef = await addDoc(collection(db, 'orders'), {
+        userId: user.uid,
+        items: cart,
+        total,
+        status: 'pending',
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+        customerEmail: user.email
+      });
+
+      // 2. Clear Cart
+      clearCart();
+
+      // 3. Redirect to a success or order detail page
+      alert(`Order # ${orderRef.id} placed successfully!`);
+      router.push('/');
+    } catch (e) {
+      console.error(e);
+      alert("Checkout failed. Please try again.");
+    } finally {
+      setIsCheckingOut(false);
+    }
+  };
 
   if (cart.length === 0) {
     return (
@@ -99,9 +140,13 @@ export default function Cart() {
                 </div>
               </div>
 
-              <button className="w-full bg-brand-ink text-brand-bg py-5 rounded-[2rem] font-bold uppercase tracking-widest text-xs flex items-center justify-center space-x-3 hover:bg-brand-accent transition-all shadow-xl group cursor-pointer">
-                <span>Proceed to Checkout</span>
-                <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+              <button 
+                onClick={handleCheckout}
+                disabled={isCheckingOut}
+                className="w-full bg-brand-ink text-brand-bg py-5 rounded-[2rem] font-bold uppercase tracking-widest text-xs flex items-center justify-center space-x-3 hover:bg-brand-accent transition-all shadow-xl group cursor-pointer disabled:opacity-50"
+              >
+                <span>{isCheckingOut ? 'Processing...' : 'Proceed to Checkout'}</span>
+                {!isCheckingOut && <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />}
               </button>
               
               <p className="mt-6 text-[10px] text-center text-brand-muted/40 uppercase tracking-[0.2em] font-bold">

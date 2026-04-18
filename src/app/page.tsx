@@ -1,13 +1,32 @@
 "use client";
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import * as motion from 'motion/react-client';
 import { ShoppingBag, ArrowRight, Star, Leaf, Droplets, Sparkles, ChevronRight, Package } from 'lucide-react';
 import ProductCard from '@/src/components/ProductCard';
 import RecommendationBox from '@/src/components/RecommendationBox';
-import { PRODUCTS } from '@/src/constants';
+import { PRODUCTS as STATIC_PRODUCTS } from '@/src/constants';
+import { collection, onSnapshot, query, limit } from 'firebase/firestore';
+import { db } from '@/src/lib/firebase';
+import { Product } from '@/src/types';
 
 export default function Home() {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const q = query(collection(db, 'products'), limit(8));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const prods = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Product[];
+      setProducts(prods);
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  const displayProducts = products.length > 0 ? products : STATIC_PRODUCTS;
+
   return (
     <div className="min-h-screen bg-brand-bg relative overflow-x-hidden">
       {/* Main Grid Layout from Design */}
@@ -68,7 +87,7 @@ export default function Home() {
             </div>
             
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
-              {PRODUCTS.slice(0, 4).map((product) => (
+              {displayProducts.slice(0, 4).map((product) => (
                 <div key={product.id}>
                   <ProductCard product={product} />
                 </div>
@@ -86,7 +105,7 @@ export default function Home() {
             </div>
             
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
-              {PRODUCTS.slice(4, 6).map((product) => (
+              {displayProducts.slice(4, 6).map((product) => (
                 <div key={product.id}>
                   <ProductCard product={product} />
                 </div>

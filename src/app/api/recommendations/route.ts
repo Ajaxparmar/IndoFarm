@@ -2,10 +2,14 @@ import { NextResponse } from 'next/server';
 import { GoogleGenAI, Type } from "@google/genai";
 import { PRODUCTS } from '@/src/constants';
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
-
 export async function POST(request: Request) {
   try {
+    const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY || process.env.GEMINI_API_KEY;
+    if (!apiKey) {
+      return NextResponse.json({ error: 'AI is not configured' }, { status: 500 });
+    }
+
+    const ai = new GoogleGenAI({ apiKey });
     const { query } = await request.json();
     
     if (!query) {
