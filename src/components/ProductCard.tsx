@@ -1,4 +1,6 @@
-import { motion } from 'motion/react';
+"use client";
+
+import * as motion from 'motion/react-client';
 import { Heart, ShoppingCart, Star } from 'lucide-react';
 import { Product } from '@/src/types';
 import { formatCurrency } from '@/src/lib/utils';

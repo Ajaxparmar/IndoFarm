@@ -1,5 +1,8 @@
+"use client";
+
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import * as motion from 'motion/react-client';
+import { AnimatePresence } from 'motion/react';
 import { Search, Sparkles, X, ArrowRight } from 'lucide-react';
 import { getRecommendations } from '@/src/services/geminiService';
 import ProductCard from './ProductCard';
@@ -15,10 +18,20 @@ export default function RecommendationBox() {
     if (!query.trim()) return;
     
     setLoading(true);
-    const results = await getRecommendations(query);
-    setRecommendations(results);
-    setLoading(false);
-    setIsOpen(true);
+    try {
+      const resp = await fetch('/api/recommendations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query }),
+      });
+      const results = await resp.json();
+      setRecommendations(Array.isArray(results) ? results : []);
+      setIsOpen(true);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

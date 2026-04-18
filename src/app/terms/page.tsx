@@ -1,8 +1,10 @@
-import { motion } from 'motion/react';
+"use client";
+
+import * as motion from 'motion/react-client';
 
 export default function TermsConditions() {
   return (
-    <div className="pt-32 pb-24">
+    <div className="pt-20 pb-24">
       <div className="max-w-4xl mx-auto px-6">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -10,7 +12,7 @@ export default function TermsConditions() {
         >
           <h1 className="text-5xl font-medium serif italic mb-12">Terms & Conditions</h1>
           
-          <div className="space-y-10 text-brand-ink/70 font-light leading-relaxed">
+          <div className="space-y-10 text-brand-muted font-light leading-relaxed">
             <section>
               <h2 className="text-2xl serif text-brand-ink mb-4">1. Acceptance of Terms</h2>
               <p>By accessing and using this website, you accept and agree to be bound by the terms and provision of this agreement. In addition, when using these particular services, you shall be subject to any posted guidelines or rules applicable to such services.</p>

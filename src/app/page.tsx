@@ -1,5 +1,7 @@
+"use client";
+
 import React from 'react';
-import { motion } from 'motion/react';
+import * as motion from 'motion/react-client';
 import { ShoppingBag, ArrowRight, Star, Leaf, Droplets, Sparkles, ChevronRight, Package } from 'lucide-react';
 import ProductCard from '@/src/components/ProductCard';
 import RecommendationBox from '@/src/components/RecommendationBox';
@@ -7,7 +9,7 @@ import { PRODUCTS } from '@/src/constants';
 
 export default function Home() {
   return (
-    <div className="pt-20 min-h-screen bg-brand-bg relative overflow-x-hidden">
+    <div className="min-h-screen bg-brand-bg relative overflow-x-hidden">
       {/* Main Grid Layout from Design */}
       <main className="max-w-[1440px] mx-auto px-10 py-16 grid lg:grid-cols-[420px_1fr] gap-16 items-start">
         
@@ -27,10 +29,10 @@ export default function Home() {
             </p>
             
             <div className="flex gap-4">
-              <button className="bg-brand-ink text-brand-bg px-7 py-3.5 rounded-sm text-[12px] font-bold uppercase tracking-[1px] hover:bg-brand-accent transition-all">
+              <button className="bg-brand-ink text-brand-bg px-7 py-3.5 rounded-sm text-[12px] font-bold uppercase tracking-[1px] hover:bg-brand-accent transition-all cursor-pointer">
                 Shop Collection
               </button>
-              <button className="bg-transparent border border-brand-ink text-brand-ink px-7 py-3.5 rounded-sm text-[12px] font-bold uppercase tracking-[1px] hover:bg-brand-ink hover:text-brand-bg transition-all">
+              <button className="bg-transparent border border-brand-ink text-brand-ink px-7 py-3.5 rounded-sm text-[12px] font-bold uppercase tracking-[1px] hover:bg-brand-ink hover:text-brand-bg transition-all cursor-pointer">
                 Read Reviews
               </button>
             </div>
@@ -42,7 +44,7 @@ export default function Home() {
                 <span className="text-[10px] uppercase font-bold tracking-widest">AI Concierge</span>
               </div>
               <p className="text-xs text-brand-muted italic mb-4">"I can find the perfect stone or fruit matching your energy today."</p>
-              <button className="text-[10px] font-bold uppercase tracking-widest text-brand-ink flex items-center space-x-2 hover:text-brand-accent transition-colors">
+              <button className="text-[10px] font-bold uppercase tracking-widest text-brand-ink flex items-center space-x-2 hover:text-brand-accent transition-colors cursor-pointer">
                 <span>Start Consultation</span>
                 <ChevronRight size={12} />
               </button>
@@ -60,7 +62,7 @@ export default function Home() {
           <div className="space-y-8">
             <div className="flex justify-between items-end border-b border-brand-ink/10 pb-3">
               <h2 className="text-2xl serif italic text-brand-ink">Recommended for you</h2>
-              <button className="text-[11px] uppercase font-bold tracking-widest text-brand-muted hover:text-brand-accent transition-colors border-b border-transparent hover:border-brand-accent">
+              <button className="text-[11px] uppercase font-bold tracking-widest text-brand-muted hover:text-brand-accent transition-colors border-b border-transparent hover:border-brand-accent cursor-pointer">
                 View All
               </button>
             </div>
@@ -78,7 +80,7 @@ export default function Home() {
           <div className="space-y-8 pt-12">
             <div className="flex justify-between items-end border-b border-brand-ink/10 pb-3">
               <h2 className="text-2xl serif italic text-brand-ink">Specialty Harvests</h2>
-              <button className="text-[11px] uppercase font-bold tracking-widest text-brand-muted hover:text-brand-accent transition-colors">
+              <button className="text-[11px] uppercase font-bold tracking-widest text-brand-muted hover:text-brand-accent transition-colors cursor-pointer">
                 Explore
               </button>
             </div>

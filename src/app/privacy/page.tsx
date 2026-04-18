@@ -1,8 +1,10 @@
-import { motion } from 'motion/react';
+"use client";
+
+import * as motion from 'motion/react-client';
 
 export default function PrivacyPolicy() {
   return (
-    <div className="pt-32 pb-24">
+    <div className="pt-20 pb-24">
       <div className="max-w-4xl mx-auto px-6">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -10,7 +12,7 @@ export default function PrivacyPolicy() {
         >
           <h1 className="text-5xl font-medium serif italic mb-12">Privacy Policy</h1>
           
-          <div className="space-y-10 text-brand-ink/70 font-light leading-relaxed">
+          <div className="space-y-10 text-brand-muted font-light leading-relaxed">
             <section>
               <h2 className="text-2xl serif text-brand-ink mb-4">1. Introduction</h2>
               <p>Welcome to Indo-Farm. We respect your privacy and are committed to protecting your personal data. This privacy policy will inform you as to how we look after your personal data when you visit our website and tell you about your privacy rights.</p>
